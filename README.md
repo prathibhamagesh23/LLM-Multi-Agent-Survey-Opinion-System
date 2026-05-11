@@ -1,83 +1,242 @@
-MAS for Automatic Survey
-Multi-agent RAG system that builds a sparse index (Whoosh BM25), retrieves & diversifies evidence (RRF + MMR, optional PRF-lite), optionally reranks with a Cross-Encoder, and aggregates option probabilities and the 100-doc support list per question.
-Submission CSV header (exact):
+# LLM Multi-Agent Survey Opinion Prediction System
+
+An advanced multi-agent retrieval-augmented generation (RAG) system designed for automated public opinion prediction from large-scale Reddit discourse data.
+
+The system integrates sparse and dense information retrieval, multi-agent orchestration, probabilistic opinion aggregation, and evidence attribution to predict survey response distributions with transparent document-level support generation.
+
+Developed for the RMIT Information Retrieval and Large Language Models coursework competition.
+
+---
+
+# Project Overview
+
+This project implements a modular multi-agent architecture for predicting population-level survey response distributions using large-scale Reddit document collections.
+
+The system:
+- retrieves relevant evidence documents,
+- diversifies and reranks candidate passages,
+- performs probabilistic option scoring,
+- calibrates prediction outputs,
+- and generates evidence-supported survey response distributions.
+
+The pipeline combines:
+- BM25 sparse retrieval,
+- dense vector retrieval,
+- Reciprocal Rank Fusion (RRF),
+- Maximal Marginal Relevance (MMR),
+- optional pseudo relevance feedback,
+- cross-encoder reranking,
+- and retrieval-augmented probabilistic aggregation.
+
+The final system outputs:
+1. calibrated probability distributions over survey options,
+2. exactly 100 evidence-supported document IDs per question.
+
+---
+
+# System Architecture
+
+## Multi-Agent Pipeline
+
+The architecture follows a modular multi-agent retrieval and reasoning workflow:
+
+```text
+Survey Question
+      ↓
+Query Planning Agent
+      ↓
+Sparse + Dense Retrieval Agent
+      ↓
+Fusion & Diversification Agent
+      ↓
+Cross-Encoder Reranking Agent
+      ↓
+Opinion Aggregation Agent
+      ↓
+Probability Calibration Agent
+      ↓
+Final Distribution + Support Generation
 ```
-question,distribution,supports
-````
-distribution — JSON object (single cell) mapping the exact option strings to probabilities that sum to 1.0 ± 1e-6.
-supports — JSON array (single cell) of exactly 100 unique document IDs (for the full competition).  
-Mini demo may have fewer.
----
-# Environment
-
-Python 3.10+ (CPU-only OK; CE reranker optional)
-pip install -r requirements.txt
-
-Overview:
-Pipeline (end-to-end):  
-BM25 (Whoosh) → RRF fuse → MMR diversity (+PRF-lite) → Cross-Encoder rerank → CE + keyword interpolation for option probabilities → write two CSVs:
-`artifacts/submission_js.csv` (submit to JS leaderboard)
-`artifacts/submission_map.csv` (submit to MAP leaderboard)
-
-
-Models:
-Cross-encoder: `cross-encoder/ms-marco-MiniLM-L-6-v2` (~66M params, <0.8B).  
-Recommended pinned revision: `5ada1949e136ae805beb30608607c6b84645969a`.
 
 ---
-Quick start (Python 3.9+)
+
+# Retrieval Pipeline
+
+The retrieval system combines multiple ranking and diversification strategies:
+
+## Sparse Retrieval
+- Whoosh BM25 indexing
+- Tokenized document search
+- Query expansion support
+
+## Dense Retrieval
+- Precomputed embedding search
+- Semantic vector similarity
+- FAISS-compatible dense retrieval pipeline
+
+## Ranking & Fusion
+- Reciprocal Rank Fusion (RRF)
+- Maximal Marginal Relevance (MMR)
+- PRF-lite expansion
+- Cross-Encoder reranking
+
+---
+
+# Core Features
+
+## Information Retrieval
+- BM25 sparse indexing
+- Dense vector retrieval
+- Hybrid retrieval fusion
+- Query diversification
+- Near-duplicate reduction
+- Retrieval reranking
+
+## Multi-Agent Reasoning
+- Modular agent orchestration
+- Explicit retrieval and aggregation stages
+- Deterministic execution pipeline
+- Config-driven workflow management
+
+## Probabilistic Opinion Prediction
+- Distribution normalization
+- Evidence-supported option scoring
+- Probability calibration
+- Aggregated opinion modelling
+
+## Evaluation & Experimentation
+- JS score evaluation
+- MAP evaluation
+- Intrinsic and extrinsic ablations
+- Probe-based benchmarking
+- Runtime benchmarking
+
+---
+
+# Models Used
+
+## Cross-Encoder Reranker
+Model:
+`cross-encoder/ms-marco-MiniLM-L-6-v2`
+
+- ~66M parameters
+- CPU compatible
+- <0.8B assignment constraint compliant
+
+Recommended pinned revision:
+`5ada1949e136ae805beb30608607c6b84645969a`
+
+---
+
+# Technologies Used
+
+- Python
+- Whoosh
+- NumPy
+- FAISS
+- Scikit-learn
+- HuggingFace Transformers
+- Sentence Transformers
+- PyYAML
+- tqdm
+
+---
+
+# Quick Start
+
+## Environment Setup
+
 ```bash
 python -m venv .venv
-# PowerShell: .\.venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
+```
 
+Activate environment:
+
+### Windows (PowerShell)
+```bash
+.\.venv\Scripts\Activate.ps1
+```
+
+### macOS/Linux
+```bash
+source .venv/bin/activate
+```
+
+Install dependencies:
 
 ```bash
-
-Build index (once)
-python -m index.build --config config.yaml --api_key DUMMY
-
-# 2) Quick run (probe slice)
-python -m mas_survey.run --config config.yaml --api_key DUMMY
-Outputs:
-
-artifacts/submission_js.csv (JS leaderboard)
-artifacts/submission_map.csv (MAP leaderboard)
-
-python tools/js_metric.py --pred artifacts/submission_js.csv --gold data/dev/dev_groundtruth.json --beta 0.3
-
-Mini runnable demo:
-python -m index.build --config mini.yaml --api_key DUMMY
-python -m mas_survey.run --config mini.yaml --api_key DUMMY
-
-Reproducible experiments & ablations
-
-python experiments\run_and_time.py --config configs\ablate_1_intrinsic_mmr_off.yaml --tag ablate_1
-python experiments\run_and_time.py --config configs\ablate_2_extrinsic_ce_on_gamma020.yaml --tag ablate_2
-python experiments\run_and_time.py --config configs\ablate_2b_extrinsic_ce_on_gamma010.yaml --tag ablate_2b
-python experiments\run_and_time.py --config configs\ablate_3_intrinsic_vs_extrinsic_k40.yaml --tag ablate_3
-python experiments\run_and_time.py --config configs\ablate_4_probe.yaml --tag probe_base
-
-Each run writes:
-
-JS/MAP CSVs under reports/ablation/**
-Timing JSON under reports/ablation/<tag>/run_time.json
-
-Build the probe table (intrinsic metrics)
-python experiments\make_probe_table.py --emb artifacts\index\dense.pkl.gz --runs `
-  "mmr_off=reports/ablation/1_intrinsic/mmr_off_js.csv" `
-  "ce_g020=reports/ablation/2_extrinsic/ce_on_g020_js.csv" `
-  "ce_g010=reports/ablation/2_extrinsic/ce_on_g010_js.csv" `
-  "k40=reports/ablation/3_intrinsic_vs_extrinsic/k40_js.csv" `
-  "baseline=reports/ablation/4_probe/base_js.csv"
-
-reports/ablation/probe_table.csv (per-question metrics)
-
-reports/ablation/probe_summary.csv (per-variant means)
-
-If dense.pkl.gz is missing, pass --emb data\id_to_embedding.npz.
+pip install -r requirements.txt
 ```
+
+---
+
+# Build Index
+
+```bash
+python -m index.build --config config.yaml --api_key DUMMY
+```
+
+---
+
+# Run MAS Pipeline
+
+```bash
+python -m mas_survey.run --config config.yaml --api_key DUMMY
+```
+
+Outputs:
+- `artifacts/submission_js.csv`
+- `artifacts/submission_map.csv`
+
+---
+
+# Mini Reproducibility Demo
+
+```bash
+python -m index.build --config mini.yaml --api_key DUMMY
+
+python -m mas_survey.run --config mini.yaml --api_key DUMMY
+```
+
+---
+
+# Evaluation
+
+## JS Metric
+
+```bash
+python tools/js_metric.py \
+--pred artifacts/submission_js.csv \
+--gold data/dev/dev_groundtruth.json \
+--beta 0.3
+```
+
+---
+
+# Experiments & Ablations
+
+Example experiment runs:
+
+```bash
+python experiments/run_and_time.py \
+--config configs/ablate_1_intrinsic_mmr_off.yaml \
+--tag ablate_1
+```
+
+```bash
+python experiments/run_and_time.py \
+--config configs/ablate_2_extrinsic_ce_on_gamma020.yaml \
+--tag ablate_2
+```
+
+Generated outputs include:
+- JS/MAP CSVs
+- runtime logs
+- ablation summaries
+- intrinsic probe metrics
+
+---
+
 Output: `./artifacts/submission_js.csv`
 ---
 File layout
@@ -140,7 +299,7 @@ File layout
     └── submission_map.csv
  
 ```
-You provide the data files (mini or full):
+The data files (mini or full):
 
 `data/mini_documents.jsonl` — one JSON per line with fields like `"id"`, `"title"`, `"description"`, `"post_content"`, `"content"`, …
 `data/dev/mini_dev.json` — a single JSON object keyed by the full question string; each value has a `distribution` stub (option keys with zeros) and an empty `supports` list.
@@ -153,10 +312,62 @@ Do not commit large artifacts (keep repo size <10 MB).
 Always add them to `.gitignore`.
 
 ---
-CSV schema reminder:
 
-Header exactly: `question,distribution,supports`
+# Dataset
 
-UTF-8; follow CSV quoting (double quotes inside a quoted cell are doubled).
-Probabilities ≥ 0 and sum to 1.0 ± 1e-6.
+The project uses:
+- Reddit discourse datasets
+- Survey question distributions
+- Precomputed dense embeddings
+- Development and test survey sets
+
+Large datasets and embeddings are intentionally excluded from the repository to maintain repository size constraints.
+
 ---
+
+# Evaluation Metrics
+
+The system is evaluated using:
+
+## Jensen-Shannon (JS) Score
+Measures similarity between predicted and ground-truth probability distributions.
+
+## Mean Average Precision (MAP)
+Measures evidence retrieval quality and support relevance.
+
+---
+
+# Reproducibility
+
+The system supports:
+- deterministic execution,
+- fixed random seeds,
+- config-driven experimentation,
+- CPU-only execution,
+- reproducible indexing pipelines,
+- reproducible retrieval experiments.
+
+All experiments and ablations are fully reproducible using the provided configuration files and scripts.
+
+---
+
+# Academic Context
+
+Developed for:
+- RMIT University
+- Information Retrieval & Large Language Models Coursework
+
+The assignment required students to design a fully reproducible multi-agent information retrieval system capable of:
+- evidence retrieval,
+- opinion aggregation,
+- probabilistic prediction,
+- retrieval evaluation,
+- and evidence-supported survey distribution modelling using large-scale Reddit datasets. :contentReference[oaicite:0]{index=0}
+
+---
+
+# Author
+
+Prathibha Magesh  
+Master of Data Science  
+RMIT University
