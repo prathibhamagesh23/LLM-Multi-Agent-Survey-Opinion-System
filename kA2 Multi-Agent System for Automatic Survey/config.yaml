@@ -1,0 +1,39 @@
+paths:
+  docs_jsonl: data/documents.jsonl
+  questions_json: data/dev/dev.json 
+  id_to_embedding_npz: data/id_to_embedding.npz
+  output_csv: artifacts/submission.csv
+  output_js_csv: artifacts/submission_js.csv
+  output_map_csv: artifacts/submission_map.csv
+
+retrieval:
+  bm25:
+    topk: 190
+  mmr:
+    enabled: true
+    lambda: 0.32
+    final_k: 120
+
+reranker:
+  enabled: true
+  model_name: cross-encoder/ms-marco-MiniLM-L-6-v2
+  batch_size: 16
+  max_length: 256
+  keep_top: 60
+  revision: "5ada1949e136ae805beb30608607c6b84645969a"
+
+agents:
+  planner:
+    n_queries: 6
+
+aggregate:
+  supports_exact: 100
+  interp_gamma: 0.2
+  dirichlet_alpha: 0.35
+  temperature: 0.96
+
+aggregate_js:
+  dirichlet_alpha: 0.35
+  temperature: 0.98
+
+random_seed: 42

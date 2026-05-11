@@ -1,0 +1,34 @@
+paths:
+  docs_jsonl: data/mini_documents.jsonl   
+  id_to_embedding_npz: data/id_to_embedding.npz   
+  questions_json: data/dev/mini_dev.json
+  output_csv: artifacts/submission_mini.csv
+  output_js_csv: artifacts/submission_js_mini.csv
+  output_map_csv: artifacts/submission_map_mini.csv
+
+debug:
+  limit_docs: 50   
+
+agents:
+  planner:
+    n_queries: 3
+
+retrieval:
+  bm25:
+    topk: 50
+  mmr:
+    enabled: true
+    lambda: 0.25
+    final_k: 50
+
+reranker:
+  enabled: false
+  model_name: cross-encoder/ms-marco-MiniLM-L-6-v2
+  batch_size: 16
+  max_length: 256
+  keep_top: 50
+
+aggregate:
+  dirichlet_alpha: 0.35
+  temperature: 0.98
+  interp_gamma: 0.0

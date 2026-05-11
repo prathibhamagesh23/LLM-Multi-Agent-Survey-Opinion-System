@@ -1,0 +1,7 @@
+{
+  "config": "configs\\ablate_3_intrinsic_vs_extrinsic_k40.yaml",
+  "output_js_csv": "reports/ablation/3_intrinsic_vs_extrinsic/k40_js.csv",
+  "elapsed_sec": 325.745,
+  "questions_processed": 15,
+  "mean_ms_per_q": 21716.3
+}

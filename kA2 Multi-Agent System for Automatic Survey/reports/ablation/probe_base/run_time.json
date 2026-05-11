@@ -1,0 +1,7 @@
+{
+  "config": "configs\\ablate_4_probe.yaml",
+  "output_js_csv": "reports/ablation/4_probe/base_js.csv",
+  "elapsed_sec": 338.641,
+  "questions_processed": 15,
+  "mean_ms_per_q": 22576.0
+}

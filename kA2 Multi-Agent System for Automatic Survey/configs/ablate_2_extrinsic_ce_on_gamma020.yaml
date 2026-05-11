@@ -1,0 +1,36 @@
+paths:
+  questions_json: data/dev/dev.json
+  output_js_csv: reports/ablation/2_extrinsic/ce_on_g020_js.csv
+  output_map_csv: reports/ablation/2_extrinsic/ce_on_g020_map.csv
+
+debug:
+  limit_questions: 15
+
+agents:
+  planner:
+    n_queries: 1
+
+retrieval:
+  bm25:
+    fields: ["title","description","post_content","content"]
+    topk: 60
+  prf:
+    top_terms: 0
+  mmr:
+    enabled: true
+    lambda: 0.32
+    final_k: 40
+
+reranker:
+  enabled: true
+  model_name: cross-encoder/ms-marco-MiniLM-L-6-v2
+  revision: "5ada1949e136ae805beb30608607c6b84645969a"
+  batch_size: 24
+  max_length: 256
+  keep_top: 20
+
+aggregate:
+  docs_for_option_scoring: 12
+  dirichlet_alpha: 0.35
+  temperature: 0.97
+  interp_gamma: 0.20
