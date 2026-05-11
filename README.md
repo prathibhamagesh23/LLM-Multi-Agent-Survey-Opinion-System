@@ -8,17 +8,22 @@ distribution — JSON object (single cell) mapping the exact option strings to p
 supports — JSON array (single cell) of exactly 100 unique document IDs (for the full competition).  
 Mini demo may have fewer.
 ---
-#Environment
+# Environment
+
 Python 3.10+ (CPU-only OK; CE reranker optional)
 pip install -r requirements.txt
-Overview
+
+Overview:
 Pipeline (end-to-end):  
 BM25 (Whoosh) → RRF fuse → MMR diversity (+PRF-lite) → Cross-Encoder rerank → CE + keyword interpolation for option probabilities → write two CSVs:
 `artifacts/submission_js.csv` (submit to JS leaderboard)
 `artifacts/submission_map.csv` (submit to MAP leaderboard)
+
+
 Models:
 Cross-encoder: `cross-encoder/ms-marco-MiniLM-L-6-v2` (~66M params, <0.8B).  
 Recommended pinned revision: `5ada1949e136ae805beb30608607c6b84645969a`.
+
 ---
 Quick start (Python 3.9+)
 ```bash
@@ -136,15 +141,22 @@ File layout
  
 ```
 You provide the data files (mini or full):
+
 `data/mini_documents.jsonl` — one JSON per line with fields like `"id"`, `"title"`, `"description"`, `"post_content"`, `"content"`, …
 `data/dev/mini_dev.json` — a single JSON object keyed by the full question string; each value has a `distribution` stub (option keys with zeros) and an empty `supports` list.
+
 Full `documents.jsonl` (and embeddings) are on the Kaggle dataset;  
 they are too large for this repo.  
-Do not commit large artifacts (keep repo size <10 MB).  
+
+Do not commit large artifacts (keep repo size <10 MB). 
+
 Always add them to `.gitignore`.
+
 ---
-CSV schema reminder
+CSV schema reminder:
+
 Header exactly: `question,distribution,supports`
+
 UTF-8; follow CSV quoting (double quotes inside a quoted cell are doubled).
 Probabilities ≥ 0 and sum to 1.0 ± 1e-6.
 ---
