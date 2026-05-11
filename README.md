@@ -239,7 +239,9 @@ Generated outputs include:
 
 Output: `./artifacts/submission_js.csv`
 ---
-File layout
+
+Project Structure
+
 ```
 .
 ├── data/
